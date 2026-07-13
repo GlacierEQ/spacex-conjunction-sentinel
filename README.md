@@ -1,2 +1,5 @@
 # spacex-conjunction-sentinel
-Close-approach risk sentinel (portfolio) SpaceX problem space
+**Portfolio** — close-approach risk index (Hill-frame approx). SpaceX problem space, not employment.
+```bash
+python3 src/conjunction.py && python3 tests/test_conjunction.py
+```
