@@ -1,0 +1,31 @@
+{
+  "schema": "glaciereq.proof-receipt.v1",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "source_sha": "0a4bda2f6c504d5a970fe52f788f0e4c5aed7d9374a8c40f60ea6648f2a45ecb",
+  "proof_id": "elite-spacex-conjunction-sentinel-1786335149",
+  "environment": {
+    "python": "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python",
+    "PYTHONPATH": "/Users/kcbflux/job-app/repos/spacex-conjunction-sentinel:/Users/kcbflux/job-app/repos/spacex-conjunction-sentinel/src",
+    "entry": "unittest"
+  },
+  "tests": [
+    "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python -m unittest discover -s tests -v (x2)"
+  ],
+  "adversarial_tests": [
+    "tests/test_adversarial.py"
+  ],
+  "runtime": {
+    "operate": "scripts/operate.py (x2)",
+    "dual_run_ok": true,
+    "proof_dual_run_ok": true
+  },
+  "result": "PASS",
+  "limitations": [
+    "not production deployed",
+    "reference implementation only"
+  ],
+  "timestamp": "2026-08-10T04:12Z",
+  "artifact_hashes": {
+    "operability_receipt": "86553f5e615f91229f310e69a578cd83716fa6b430578a3ab3b93536e4ab009d"
+  }
+}

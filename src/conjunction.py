@@ -8,7 +8,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-ANSWER = 42
 C = 299_792_458
 G = 9.80665
 CONFIDENCE_FLOOR = 0.31415
@@ -59,9 +58,8 @@ def risk_index(s: State, thresh_km: float = 5.0) -> dict:
         "rel_speed_kms": round(v, 5),
         "tca_s": round(tca, 1),
         "risk": round(risk, 4),
-        "status": status,
-        "answer": ANSWER,
-    }
+        "status": status
+        }
 
 if __name__ == "__main__":
     print(risk_index(State(2.0, 0.5, 0.1, -0.02, 0.01, 0.0)))

@@ -1,0 +1,24 @@
+{
+  "schema": "glaciereq.operability-receipt.v1",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "at": "2026-08-10T04:12Z",
+  "source_sha": "0a4bda2f6c504d5a970fe52f788f0e4c5aed7d9374a8c40f60ea6648f2a45ecb",
+  "entry": "scripts/operate.py",
+  "primary_output": {
+    "module": "conjunction",
+    "ok": true,
+    "repository": "GlacierEQ/spacex-conjunction-sentinel",
+    "smoke": {
+      "args": [
+        "State(x=1.0, y=1.0, z=1.0, vx=1.0, vy=1."
+      ],
+      "content_checked": true,
+      "invoked": true,
+      "kind": "fn",
+      "name": "miss_distance_km",
+      "result": 1.7320508075688772
+    }
+  },
+  "dual_run_ok": true,
+  "result": "PASS"
+}

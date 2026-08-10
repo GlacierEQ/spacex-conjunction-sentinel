@@ -1,0 +1,11 @@
+{
+  "schema": "glaciereq.promotion-authority-grant.v1",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "source_sha": "0a4bda2f6c504d5a970fe52f788f0e4c5aed7d9374a8c40f60ea6648f2a45ecb",
+  "proof_receipt_digest": "ae8447ca5d3acd16b472d02809947b232da21406ff5ffc757161166e2dc87687",
+  "not_after": 1788927149.234226,
+  "mac": "82aaaf53487c0f7762dc189f15b347a379fb32d399a06ec2f9f1e61d82422cfe",
+  "issuer": "local_operator_promotion_authority",
+  "verified": true,
+  "secret_ref": "src/promotion_authority.py::LOCAL_OPERATOR_SECRET"
+}
