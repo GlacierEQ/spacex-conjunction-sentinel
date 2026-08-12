@@ -1,0 +1,40 @@
+name: Public Close-Approach Truth Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  truth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: Run public geometry truth tests
+        run: python -m pytest -q tests/test_conjunction.py tests/test_public_truth.py tests/test_adversarial.py
+      - name: Run fail-closed public verifier
+        run: python scripts/verify_public_surface.py
+      - name: Compile and execute Rust reference tests
+        run: |
+          rustc --version
+          rustc --edition=2021 --test src/orbit_propagator.rs -o /tmp/orbit-reference-tests
+          /tmp/orbit-reference-tests
