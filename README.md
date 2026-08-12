@@ -1,79 +1,68 @@
-# SpaceX Conjunction Sentinel — Space Debris Collision Avoidance 🛰️
+# Close-Approach Geometry Sentinel
 
-> **Autonomous conjunction assessment and collision avoidance maneuver planning for orbital assets.**
+> **Independent portfolio project for deterministic local relative-motion screening. Not affiliated with, endorsed by, or connected to SpaceX.**
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue)]()
-[![Rust](https://img.shields.io/badge/Rust-Safety%20Critical-orange)]()
-[![Domain](https://img.shields.io/badge/Domain-Orbital%20Safety-red)]()
+This repository demonstrates a bounded **close-approach geometry screen** using caller-supplied relative position/velocity plus a separate Rust J2/Kepler reference model. It is an engineering exhibit, not an operational conjunction-assessment or collision-avoidance system.
 
----
+## Recruiter surface
 
-## 🎯 For Recruiters & Hiring Managers
+The proven capability is deliberately narrower and more defensible than the historical README:
 
-This repository implements a **space debris collision avoidance system** — the software that protects satellites and spacecraft from catastrophic collisions with orbital debris. It demonstrates:
+- analytic closest-point-of-approach time under constant relative velocity;
+- deterministic closest-separation and relative-speed calculation;
+- bounded geometric proximity scoring that is **not a probability of collision**;
+- fail-closed handling of non-finite and invalid thresholds/horizons;
+- a typed Rust two-body/J2 reference with native tests;
+- explicit separation between local screening output and maneuver/control authority.
 
-- **Probabilistic risk assessment** using Monte Carlo conjunction analysis
-- **Automated maneuver planning** with delta-V optimization for collision avoidance burns
-- **TLE/ephemeris processing** for tracking 30,000+ cataloged objects
-- **Real-time alert pipeline** with configurable probability-of-collision (Pc) thresholds
+## Engineering surface
 
-**Why this matters**: Space sustainability is a trillion-dollar problem. With 30,000+ tracked objects and growing, conjunction assessment requires the same probabilistic reasoning, real-time data fusion, and safety-critical decision-making used in autonomous vehicles and financial risk management.
+| Surface | What is actually established |
+|---|---|
+| `src/conjunction.py` | Executable local constant-relative-velocity close-approach geometry and bounded screening score |
+| `src/orbit_propagator.rs` | Simplified Rust J2/Kepler orbit-reference model; **not SGP4/SDP4** |
+| `tests/test_conjunction.py` | Python geometry, fail-closed input, and no-authority regression tests |
+| `tests/test_adversarial.py` | Existing generic adversarial/import boundary tests |
+| `scripts/verify_public_surface.py` | Fail-closed public/machine truth verifier |
 
----
+### Evidence states
 
-## 🔬 For Engineers & Technical Reviewers
+Python:
 
-### Architecture
+`LOCAL_CLOSE_APPROACH_GEOMETRY_NOT_COLLISION_AVOIDANCE_AUTHORITY`
 
-```
-TLE Catalog ──→ Orbit Propagator ──→ Conjunction Screen
-                     │                       │
-              SGP4/SDP4 (Rust)      Probability of Collision
-                     │                       │
-              State Vectors ──→ Miss Distance + Pc ──→ Alert/Maneuver
-```
+Rust:
 
-### Core Components
+`LOCAL_J2_KEPLER_REFERENCE_NOT_SGP4_OR_COLLISION_AVOIDANCE_AUTHORITY`
 
-| Component | Language | Purpose |
-|---|---|---|
-| `src/conjunction_engine.py` | Python | CDM processing, Pc calculation, alert generation |
-| `src/orbit_propagator.rs` | Rust | SGP4/SDP4 orbit propagation with compile-time safety |
-| `tests/` | Python | Conjunction scenario validation with known CDM datasets |
+The historical Python function name `risk_index()` remains only as a compatibility alias. Its result no longer exposes a pseudo-probability or generic `risk` field; it returns the same bounded geometric screening receipt as `screen_close_approach()`.
 
-### Key Algorithms
+## Machine proof
 
-- **Alfano probability of collision**: 2D projected covariance with Gaussian miss distance
-- **SGP4 propagation**: NORAD two-line element set propagation for LEO/MEO objects
-- **Covariance realism**: Mhalanobis distance scaling for covariance consistency
-
----
-
-## 🤖 ML/AI & Programmatic Mesh Integration
-
-### Agent Mesh Connectivity
-
-- **MCP Tool**: `conjunction_screen(norad_id, hours_ahead)` — exposes screening as an agent-callable tool
-- **Mastermind Sidecar**: Publishes conjunction alerts to the APEX Highway event bus
-- **SHA-256 Integrity**: Cryptographic hash verification via `.integrity/file_hashes.json`
-
-### AI/ML Extension Points
-
-- **Maneuver Optimization**: Reinforcement learning for optimal avoidance burn timing and magnitude
-- **Covariance Calibration**: Neural network covariance realism correction from historical CDM accuracy
-- **Debris Cloud Prediction**: GNN-based fragmentation debris propagation for post-breakup conjunction assessment
-
-```python
-# Agent mesh query
-alerts = await mcp_client.call_tool("conjunction-sentinel", "screen_all", {"hours": 72})
-# Returns: [{"norad_id": 25544, "pc": 1.2e-4, "tca": "2026-07-30T12:00Z", "action": "MONITOR"}]
-```
-
----
-
-## ⚡ Quick Start
+Run:
 
 ```bash
-python3 src/conjunction_engine.py
-python3 tests/test_conjunction.py
+python -m pytest -q
+python scripts/verify_public_surface.py
+rustc --edition=2021 --test src/orbit_propagator.rs -o /tmp/orbit-reference-tests
+/tmp/orbit-reference-tests
 ```
+
+Repository CI binds Python 3.11/3.13 and native Rust test execution to the exact reviewed/current source SHA.
+
+## Explicit nonclaims
+
+This repository establishes **none** of the following:
+
+- SpaceX affiliation, endorsement, employment, proprietary data, or internal systems access;
+- live NORAD/TLE/CDM catalog ingestion, 30,000-object screening, or real-time alerting;
+- SGP4/SDP4 implementation or validated orbit determination/propagation accuracy;
+- Alfano, Monte Carlo, Gaussian covariance, Mahalanobis covariance-realism, or calibrated probability-of-collision calculation;
+- collision diagnosis, operational conjunction assessment, autonomous avoidance-burn planning, delta-V optimization, or maneuver authority;
+- real spacecraft, telemetry, command, flight computer, or safety-critical operation;
+- MCP tool exposure, APEX event-bus publication, live agent/provider/mesh integration, or production deployment;
+- RL maneuver optimization, neural covariance calibration, or GNN debris-cloud prediction. Those were historical extension ideas, not implemented proof.
+
+## Next proof gate
+
+A legitimate next expansion would require a separately validated propagator/catalog/covariance pipeline with known reference vectors and independent numerical error bounds. Until then, the public capability remains **local deterministic close-approach geometry plus a simplified Rust J2/Kepler reference**.
