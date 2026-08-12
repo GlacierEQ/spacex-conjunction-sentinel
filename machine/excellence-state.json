@@ -1,7 +1,7 @@
 {
   "schema": "glaciereq.repo-excellence-state.v1",
   "repository": "GlacierEQ/spacex-conjunction-sentinel",
-  "principal_state": "PROMOTED",
+  "principal_state": "IMPLEMENTED",
   "gates": {
     "IDENTITY_RESOLVED": {
       "status": "PASS",
@@ -10,13 +10,13 @@
     },
     "PROBLEM_VERIFIED": {
       "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "README/ISSUE_CONTRACT problem bound"
+      "at": "2026-08-12T20:31Z",
+      "evidence": "current source directly implements bounded close-approach risk and orbit-propagation reference mechanisms; inflated README claims are separately blocked"
     },
     "TARGET_CONTRACT_FROZEN": {
       "status": "PASS",
       "at": "2026-08-10T06:25Z",
-      "evidence": "machine/target-contract.json"
+      "evidence": "machine/target-contract.json retained as historical target contract"
     },
     "DONOR_PLAN_RESOLVED": {
       "status": "PASS",
@@ -25,63 +25,65 @@
     },
     "VERTICAL_SLICE_ALIVE": {
       "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "src mechanism + scripts/operate.py"
+      "at": "2026-08-12T20:31Z",
+      "evidence": "src/conjunction.py and src/orbit_propagator.rs contain direct computational mechanisms"
     },
     "CENTRAL_MECHANISM_PRESENT": {
       "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "central mechanism in src/"
+      "at": "2026-08-12T20:31Z",
+      "evidence": "Python close-approach risk mechanism plus Rust orbital propagation/conjunction helpers"
     },
     "DETERMINISTIC_PROOF_GREEN": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "dual-run green tests"
+      "status": "FAIL",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "exact current head ec3a8d5e088d0dcc454cfb37fd4216e29c8642a9 CI run 31362141879 failed at ruff check with 63 findings before pytest executed"
     },
     "ADVERSARIAL_SURVIVAL": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "tests/test_adversarial.py"
+      "status": "BLOCKED",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "tests/test_adversarial.py exists, but current exact-head CI did not execute tests after the static-quality failure"
     },
     "OPERABLE_AND_OBSERVABLE": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "scripts/operate.py dual-run PASS; primary ok"
+      "status": "BLOCKED",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "historical local scripts/operate.py receipt is not bound to the current Git SHA"
     },
     "PROOF_RECEIPT_BOUND": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "machine/proof_receipt.json bound"
+      "status": "FAIL",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "machine/proof_receipt.json records a 64-hex source hash rather than an exact Git commit and cannot certify current head"
     },
     "AUTHORITY_BOUND": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "promotion_authority.json local HMAC grant"
+      "status": "BLOCKED",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "src/promotion_authority.py exists but current exact-head verification is not green"
     },
     "PROJECTION_TRUTH_CLOSED": {
-      "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "proof=ae8447ca5d3acd16; authority=9b8eed58bc62b51e; operability=86553f5e615f9122; claim_ceiling=leaf-native; nonclaims=non_affiliation_preserved; projection_role=monolith_projection_only; readback=operate_content_checked+validator_PASS"
+      "status": "FAIL",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "README currently names a nonexistent src/conjunction_engine.py and presents unverified Monte Carlo, Alfano Pc, maneuver optimization, and MCP surfaces as implemented"
     },
     "CANONICAL_POSITION_RESOLVED": {
-      "status": "PENDING"
+      "status": "PENDING",
+      "at": "2026-08-12T20:31Z",
+      "evidence": "SpaceX-family unique-value/canonical-position comparison remains required"
     },
     "EVOLUTION_CURSOR_DEFINED": {
       "status": "PASS",
-      "at": "2026-08-10T06:25Z",
-      "evidence": "next:canonical_position_only_if_estate_role_resolved"
+      "at": "2026-08-12T20:31Z",
+      "evidence": "repair current CI without weakening gate; execute exact-head tests; correct projection truth; resolve family position"
     },
     "problem_verified": true,
-    "unique_value_known": true,
-    "canonical_identity_known": true,
+    "unique_value_known": false,
+    "canonical_identity_known": false,
     "central_mechanism_implemented": true,
-    "deterministic_tests_pass": true,
-    "adversarial_tests_pass": true,
-    "runtime_behavior_observed": true,
-    "security_authority_bounded": true,
-    "proof_receipt_bound_to_sha": true,
-    "reusable_capabilities_extracted": true,
-    "projections_truth_consistent": true,
+    "deterministic_tests_pass": false,
+    "adversarial_tests_pass": false,
+    "runtime_behavior_observed": false,
+    "security_authority_bounded": false,
+    "proof_receipt_bound_to_sha": false,
+    "reusable_capabilities_extracted": false,
+    "projections_truth_consistent": false,
     "evolution_cursor_defined": true
   },
   "history": [
@@ -139,7 +141,7 @@
       "to": "TESTED",
       "gate": "DETERMINISTIC_PROOF_GREEN",
       "result": "PASS",
-      "note": "dual-run green tests"
+      "note": "historical local dual-run green tests"
     },
     {
       "at": "2026-08-10T06:25Z",
@@ -147,7 +149,7 @@
       "to": "ADVERSARIAL_VERIFIED",
       "gate": "ADVERSARIAL_SURVIVAL",
       "result": "PASS",
-      "note": "tests/test_adversarial.py"
+      "note": "historical local tests/test_adversarial.py"
     },
     {
       "at": "2026-08-10T06:25Z",
@@ -155,7 +157,7 @@
       "to": "OPERABLE",
       "gate": "OPERABLE_AND_OBSERVABLE",
       "result": "PASS",
-      "note": "scripts/operate.py dual-run PASS; primary ok"
+      "note": "historical local scripts/operate.py dual-run PASS"
     },
     {
       "at": "2026-08-10T06:25Z",
@@ -163,7 +165,7 @@
       "to": "PROOF_REPRODUCED",
       "gate": "PROOF_RECEIPT_BOUND",
       "result": "PASS",
-      "note": "machine/proof_receipt.json bound"
+      "note": "historical machine/proof_receipt.json; later audit found it is not exact-Git-SHA bound"
     },
     {
       "at": "2026-08-10T06:25Z",
@@ -171,26 +173,34 @@
       "to": "PROMOTED",
       "gate": "AUTHORITY_BOUND",
       "result": "PASS",
-      "note": "promotion_authority + PROJECTION_TRUTH_CLOSED"
+      "note": "historical promotion_authority + PROJECTION_TRUTH_CLOSED assertion"
+    },
+    {
+      "at": "2026-08-12T20:31Z",
+      "from": "PROMOTED",
+      "to": "IMPLEMENTED",
+      "gate": "CURRENT_HEAD_PROOF_RECONCILIATION",
+      "result": "FAIL_CLOSED",
+      "note": "exact current-head CI failed before tests; historical proof is not Git-SHA bound; public projection contains unsupported implementation claims"
     }
   ],
   "contract_ref": "machine/target-contract.json",
   "scores_ref": "machine/excellence-scores.json",
-  "evolution_cursor": "next:canonical_position_only_if_estate_role_resolved",
+  "current_receipt_ref": "machine/current-excellence-receipt.json",
+  "evolution_cursor": "repair:current-ci-then-exact-head-tests-then-projection-truth-then-family-position",
   "wave": {
-    "id": "ELITE-ESTATE-SCHEMA-MIGRATE-2026-08-10",
-    "proof_ok": true,
-    "operable_ok": true,
-    "migrated_at": "2026-08-10T05:56Z",
-    "from_schema": "glaciereq.repo-excellence.record.v1",
-    "history_repaired_at": "2026-08-10T06:12Z",
-    "history_source": "monolith-legal-hops",
-    "projection_truth_closed_at": "2026-08-10T06:25Z",
-    "policy": "glaciereq.repo-excellence.promotion-policy.v1"
+    "id": "CRYSTALLIZATION-WAVE-1-2026-08-12",
+    "proof_ok": false,
+    "operable_ok": false,
+    "reconciled_at": "2026-08-12T20:31Z",
+    "historical_promotion_preserved": true,
+    "current_head_inherits_historical_proof": false,
+    "policy": "glaciereq.repo-excellence.current-head-proof-required.v1"
   },
-  "state": "PROMOTED",
+  "state": "IMPLEMENTED",
   "proof_receipt": {
-    "source_sha": "HYPER_VALIDATED_SHA256",
-    "identity": "HYPER_VALIDATED_IDENTITY"
+    "source_sha": "ec3a8d5e088d0dcc454cfb37fd4216e29c8642a9",
+    "identity": "machine/current-excellence-receipt.json",
+    "status": "BLOCKED_CURRENT_HEAD"
   }
 }
