@@ -2,19 +2,28 @@
   "schema": "glaciereq.repo-excellence-scores.v1",
   "repository": "GlacierEQ/spacex-conjunction-sentinel",
   "never_collapse": true,
+  "observed_head_before_repair": "ec3a8d5e088d0dcc454cfb37fd4216e29c8642a9",
   "axes": {
     "target_architecture": {
-      "grade": "B"
+      "grade": "B",
+      "basis": "bounded conjunction-risk and orbital-propagation reference mechanisms exist"
     },
     "current_proof": {
-      "grade": "A"
+      "grade": "D",
+      "basis": "exact current-head CI run 31362141879 failed at static-quality gate before tests executed"
+    },
+    "projection_truth": {
+      "grade": "B",
+      "basis": "repair branch removes unsupported README implementation claims and stale promoted state; final grade awaits exact-head CI"
     },
     "company_fit": {
-      "score": 0.0
+      "score": 0.0,
+      "basis": "no company-affiliation or employer-adoption evidence"
     },
     "canonical_confidence": {
       "score": 0.0,
-      "role": "PROMOTED_LEAF"
+      "role": "ACTIVE_SPECIALIST_PENDING_FAMILY_POSITION",
+      "basis": "canonical-family comparison has not yet established distinct repo ownership"
     }
   }
 }
