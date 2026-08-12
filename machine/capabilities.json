@@ -1,1 +1,20 @@
-{"capabilities": ["hyper-scaling"]}
+{
+  "schema": "glaciereq.capabilities.v2",
+  "capabilities": [
+    "analytic-relative-motion-cpa",
+    "deterministic-encounter-plane-monte-carlo-pc",
+    "bounded-linearized-maneuver-review",
+    "small-catalog-pairwise-screening",
+    "tle-mean-element-parsing",
+    "python-two-body-orbit-propagation",
+    "rust-two-body-orbit-propagation",
+    "deterministic-json-assessment-cli"
+  ],
+  "nonclaims": [
+    "no operational spacecraft authority",
+    "no SpaceX affiliation",
+    "no SGP4/SDP4 fidelity claim",
+    "no live catalog-scale throughput claim",
+    "no maneuver execution"
+  ]
+}
