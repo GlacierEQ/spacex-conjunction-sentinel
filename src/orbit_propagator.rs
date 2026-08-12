@@ -1,163 +1,186 @@
-/// SGP4/SDP4 Orbit Propagator — Rust Implementation
-/// Compile-time safe orbit propagation for conjunction assessment.
-/// Handles LEO (SGP4) and deep-space (SDP4) objects with full perturbation modeling.
+//! Deterministic two-body orbit kernel for local conjunction simulation.
+//!
+//! This crate deliberately does not claim SGP4/SDP4 fidelity, flight
+//! certification, operational spacecraft authority, or SpaceX affiliation.
 
+use std::error::Error;
 use std::f64::consts::PI;
+use std::fmt::{Display, Formatter};
 
-const MU_EARTH: f64 = 398600.4418;      // km³/s²
-const EARTH_RADIUS_KM: f64 = 6378.137;  // WGS-84
-const J2: f64 = 0.00108263;             // Earth oblateness
-const MINUTES_PER_DAY: f64 = 1440.0;
+pub const MU_EARTH_KM3_S2: f64 = 398_600.441_8;
+pub const EARTH_RADIUS_KM: f64 = 6_378.137;
+const SECONDS_PER_DAY: f64 = 86_400.0;
 const TWO_PI: f64 = 2.0 * PI;
 
-/// Two-Line Element set parsed from NORAD catalog
-#[derive(Debug, Clone)]
-pub struct TLE {
+#[derive(Debug, Clone, PartialEq)]
+pub struct Tle {
     pub norad_id: u32,
-    pub epoch_year: u16,
-    pub epoch_day: f64,
-    pub mean_motion_rev_day: f64,    // revs/day
+    pub mean_motion_rev_day: f64,
     pub eccentricity: f64,
     pub inclination_deg: f64,
-    pub raan_deg: f64,               // Right Ascension of Ascending Node
+    pub raan_deg: f64,
     pub arg_perigee_deg: f64,
     pub mean_anomaly_deg: f64,
-    pub bstar: f64,                   // Drag coefficient (1/earth_radii)
-    pub classification: char,
 }
 
-/// State vector in ECI (Earth-Centered Inertial) frame
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct StateVector {
-    pub x: f64, pub y: f64, pub z: f64,       // Position (km)
-    pub vx: f64, pub vy: f64, pub vz: f64,    // Velocity (km/s)
-    pub epoch_minutes: f64,                      // Minutes since TLE epoch
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub vx: f64,
+    pub vy: f64,
+    pub vz: f64,
+    pub epoch_minutes: f64,
 }
 
 impl StateVector {
-    pub fn position_magnitude(&self) -> f64 {
+    pub fn position_magnitude(self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn velocity_magnitude(&self) -> f64 {
+    pub fn velocity_magnitude(self) -> f64 {
         (self.vx * self.vx + self.vy * self.vy + self.vz * self.vz).sqrt()
     }
 
-    /// Compute orbital altitude above Earth surface (km)
-    pub fn altitude_km(&self) -> f64 {
+    pub fn altitude_km(self) -> f64 {
         self.position_magnitude() - EARTH_RADIUS_KM
     }
 }
 
-/// Conjunction assessment result
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PropagationError {
+    InvalidNoradId,
+    InvalidMeanMotion,
+    InvalidEccentricity,
+    InvalidInclination,
+    NonFiniteElement,
+    SolverDidNotConverge,
+}
+
+impl Display for PropagationError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for PropagationError {}
+
 #[derive(Debug, Clone)]
-pub struct ConjunctionResult {
-    pub miss_distance_km: f64,
-    pub relative_velocity_kms: f64,
-    pub tca_minutes: f64,            // Time of Closest Approach (minutes since epoch)
-    pub probability_of_collision: f64,
+pub struct TwoBodyPropagator {
+    tle: Tle,
+    mean_motion_rad_s: f64,
+    semi_major_axis_km: f64,
 }
 
-/// SGP4 propagator for near-Earth objects
-pub struct SGP4Propagator {
-    tle: TLE,
-    // Pre-computed orbital elements
-    n0: f64,      // Mean motion (rad/min)
-    a0: f64,      // Semi-major axis (Earth radii)
-    e0: f64,      // Eccentricity
-    i0: f64,      // Inclination (rad)
-    omega0: f64,  // RAAN (rad)
-    w0: f64,      // Argument of perigee (rad)
-    m0: f64,      // Mean anomaly (rad)
-}
+impl TwoBodyPropagator {
+    pub fn new(tle: Tle) -> Result<Self, PropagationError> {
+        if tle.norad_id == 0 {
+            return Err(PropagationError::InvalidNoradId);
+        }
+        let fields = [
+            tle.mean_motion_rev_day,
+            tle.eccentricity,
+            tle.inclination_deg,
+            tle.raan_deg,
+            tle.arg_perigee_deg,
+            tle.mean_anomaly_deg,
+        ];
+        if fields.iter().any(|value| !value.is_finite()) {
+            return Err(PropagationError::NonFiniteElement);
+        }
+        if tle.mean_motion_rev_day <= 0.0 {
+            return Err(PropagationError::InvalidMeanMotion);
+        }
+        if !(0.0..1.0).contains(&tle.eccentricity) {
+            return Err(PropagationError::InvalidEccentricity);
+        }
+        if !(0.0..=180.0).contains(&tle.inclination_deg) {
+            return Err(PropagationError::InvalidInclination);
+        }
 
-impl SGP4Propagator {
-    pub fn new(tle: TLE) -> Self {
-        let n0 = tle.mean_motion_rev_day * TWO_PI / MINUTES_PER_DAY;
-        let a0 = (MU_EARTH / (n0 * n0)).powf(1.0 / 3.0) / EARTH_RADIUS_KM;
-
-        SGP4Propagator {
-            n0,
-            a0,
-            e0: tle.eccentricity,
-            i0: tle.inclination_deg.to_radians(),
-            omega0: tle.raan_deg.to_radians(),
-            w0: tle.arg_perigee_deg.to_radians(),
-            m0: tle.mean_anomaly_deg.to_radians(),
+        let mean_motion_rad_s = tle.mean_motion_rev_day * TWO_PI / SECONDS_PER_DAY;
+        let semi_major_axis_km =
+            (MU_EARTH_KM3_S2 / mean_motion_rad_s.powi(2)).powf(1.0 / 3.0);
+        Ok(Self {
             tle,
+            mean_motion_rad_s,
+            semi_major_axis_km,
+        })
+    }
+
+    pub fn propagate(&self, minutes_since_epoch: f64) -> Result<StateVector, PropagationError> {
+        if !minutes_since_epoch.is_finite() {
+            return Err(PropagationError::NonFiniteElement);
         }
-    }
+        let eccentricity = self.tle.eccentricity;
+        let mut mean_anomaly = self.tle.mean_anomaly_deg.to_radians()
+            + self.mean_motion_rad_s * minutes_since_epoch * 60.0;
+        mean_anomaly = mean_anomaly.rem_euclid(TWO_PI);
 
-    /// Propagate to time t (minutes since TLE epoch)
-    /// Returns ECI state vector with J2 secular perturbations
-    pub fn propagate(&self, t_min: f64) -> StateVector {
-        let cos_i = self.i0.cos();
-        let sin_i = self.i0.sin();
-
-        // J2 secular rates
-        let p = self.a0 * (1.0 - self.e0 * self.e0);
-        let n_dot = self.n0 * (1.0 + 1.5 * J2 / (p * p) * (1.0 - 1.5 * sin_i * sin_i));
-        let omega_dot = -1.5 * J2 * n_dot / (p * p) * cos_i;
-        let w_dot = 1.5 * J2 * n_dot / (p * p) * (2.0 - 2.5 * sin_i * sin_i);
-
-        // Updated orbital elements
-        let m = self.m0 + n_dot * t_min;
-        let omega = self.omega0 + omega_dot * t_min;
-        let w = self.w0 + w_dot * t_min;
-
-        // Solve Kepler's equation (Newton-Raphson)
-        let mut e_anomaly = m;
-        for _ in 0..20 {
-            let delta = (e_anomaly - self.e0 * e_anomaly.sin() - m)
-                / (1.0 - self.e0 * e_anomaly.cos());
-            e_anomaly -= delta;
-            if delta.abs() < 1e-12 { break; }
+        let mut eccentric_anomaly = mean_anomaly;
+        let mut converged = false;
+        for _ in 0..32 {
+            let denominator = 1.0 - eccentricity * eccentric_anomaly.cos();
+            let delta = (eccentric_anomaly
+                - eccentricity * eccentric_anomaly.sin()
+                - mean_anomaly)
+                / denominator;
+            eccentric_anomaly -= delta;
+            if delta.abs() < 1e-13 {
+                converged = true;
+                break;
+            }
+        }
+        if !converged {
+            return Err(PropagationError::SolverDidNotConverge);
         }
 
-        // True anomaly
-        let cos_e = e_anomaly.cos();
-        let sin_e = e_anomaly.sin();
-        let nu = (((1.0 + self.e0) / (1.0 - self.e0)).sqrt() * (sin_e / 2.0).atan2((cos_e / 2.0 + 0.5).max(1e-12))).atan() * 2.0;
+        let cos_e = eccentric_anomaly.cos();
+        let sin_e = eccentric_anomaly.sin();
+        let radius_km = self.semi_major_axis_km * (1.0 - eccentricity * cos_e);
+        let denominator = 1.0 - eccentricity * cos_e;
+        let cos_nu = (cos_e - eccentricity) / denominator;
+        let sin_nu = (1.0 - eccentricity * eccentricity).sqrt() * sin_e / denominator;
+        let p = self.semi_major_axis_km * (1.0 - eccentricity * eccentricity);
+        let velocity_scale = (MU_EARTH_KM3_S2 / p).sqrt();
 
-        // Radius
-        let r = self.a0 * EARTH_RADIUS_KM * (1.0 - self.e0 * cos_e);
+        let x_pf = radius_km * cos_nu;
+        let y_pf = radius_km * sin_nu;
+        let vx_pf = -velocity_scale * sin_nu;
+        let vy_pf = velocity_scale * (eccentricity + cos_nu);
 
-        // Position in orbital plane
-        let u = w + nu;
-        let cos_u = u.cos();
-        let sin_u = u.sin();
-        let cos_o = omega.cos();
-        let sin_o = omega.sin();
+        let raan = self.tle.raan_deg.to_radians();
+        let inclination = self.tle.inclination_deg.to_radians();
+        let arg_perigee = self.tle.arg_perigee_deg.to_radians();
+        let (co, so) = (raan.cos(), raan.sin());
+        let (ci, si) = (inclination.cos(), inclination.sin());
+        let (cw, sw) = (arg_perigee.cos(), arg_perigee.sin());
 
-        // ECI coordinates
-        let x = r * (cos_o * cos_u - sin_o * sin_u * cos_i);
-        let y = r * (sin_o * cos_u + cos_o * sin_u * cos_i);
-        let z = r * sin_u * sin_i;
+        let r11 = co * cw - so * sw * ci;
+        let r12 = -co * sw - so * cw * ci;
+        let r21 = so * cw + co * sw * ci;
+        let r22 = -so * sw + co * cw * ci;
+        let r31 = sw * si;
+        let r32 = cw * si;
 
-        // Velocity (simplified vis-viva)
-        let v = (MU_EARTH * (2.0 / r - 1.0 / (self.a0 * EARTH_RADIUS_KM))).sqrt();
-        let flight_path = (self.e0 * nu.sin()) / (1.0 + self.e0 * nu.cos());
-        let vx = -v * (sin_o * cos_u + cos_o * sin_u * cos_i) + v * flight_path * x / r;
-        let vy = v * (cos_o * cos_u - sin_o * sin_u * cos_i) + v * flight_path * y / r;
-        let vz = v * sin_u * sin_i + v * flight_path * z / r;
-
-        StateVector { x, y, z, vx, vy, vz, epoch_minutes: t_min }
+        Ok(StateVector {
+            x: r11 * x_pf + r12 * y_pf,
+            y: r21 * x_pf + r22 * y_pf,
+            z: r31 * x_pf + r32 * y_pf,
+            vx: r11 * vx_pf + r12 * vy_pf,
+            vy: r21 * vx_pf + r22 * vy_pf,
+            vz: r31 * vx_pf + r32 * vy_pf,
+            epoch_minutes: minutes_since_epoch,
+        })
     }
 
-    /// Compute miss distance between two propagated objects at a given time
-    pub fn miss_distance(sv1: &StateVector, sv2: &StateVector) -> f64 {
-        let dx = sv1.x - sv2.x;
-        let dy = sv1.y - sv2.y;
-        let dz = sv1.z - sv2.z;
-        (dx * dx + dy * dy + dz * dz).sqrt()
+    pub fn miss_distance(a: StateVector, b: StateVector) -> f64 {
+        ((a.x - b.x).powi(2) + (a.y - b.y).powi(2) + (a.z - b.z).powi(2)).sqrt()
     }
 
-    /// Compute relative velocity between two objects
-    pub fn relative_velocity(sv1: &StateVector, sv2: &StateVector) -> f64 {
-        let dvx = sv1.vx - sv2.vx;
-        let dvy = sv1.vy - sv2.vy;
-        let dvz = sv1.vz - sv2.vz;
-        (dvx * dvx + dvy * dvy + dvz * dvz).sqrt()
+    pub fn relative_velocity(a: StateVector, b: StateVector) -> f64 {
+        ((a.vx - b.vx).powi(2) + (a.vy - b.vy).powi(2) + (a.vz - b.vz).powi(2)).sqrt()
     }
 }
 
@@ -165,36 +188,41 @@ impl SGP4Propagator {
 mod tests {
     use super::*;
 
-    fn test_tle() -> TLE {
-        TLE {
-            norad_id: 25544,
-            epoch_year: 2026,
-            epoch_day: 210.5,
+    fn iss_like_tle() -> Tle {
+        Tle {
+            norad_id: 25_544,
             mean_motion_rev_day: 15.49,
-            eccentricity: 0.0006703,
+            eccentricity: 0.000_670_3,
             inclination_deg: 51.6434,
             raan_deg: 247.4627,
             arg_perigee_deg: 130.5360,
             mean_anomaly_deg: 325.0288,
-            bstar: 0.0001,
-            classification: 'U',
         }
     }
 
     #[test]
-    fn test_propagate_iss() {
-        let prop = SGP4Propagator::new(test_tle());
-        let sv = prop.propagate(0.0); // At epoch
-        let alt = sv.altitude_km();
-        assert!(alt > 300.0 && alt < 500.0, "ISS altitude should be ~420km, got {}", alt);
+    fn iss_like_state_has_physical_radius_and_speed() {
+        let propagator = TwoBodyPropagator::new(iss_like_tle()).unwrap();
+        let state = propagator.propagate(0.0).unwrap();
+        assert!((300.0..500.0).contains(&state.altitude_km()));
+        assert!((7.0..8.5).contains(&state.velocity_magnitude()));
     }
 
     #[test]
-    fn test_miss_distance() {
-        let prop = SGP4Propagator::new(test_tle());
-        let sv1 = prop.propagate(0.0);
-        let sv2 = prop.propagate(1.0);
-        let dist = SGP4Propagator::miss_distance(&sv1, &sv2);
-        assert!(dist > 0.0, "Miss distance should be positive");
+    fn propagation_changes_position() {
+        let propagator = TwoBodyPropagator::new(iss_like_tle()).unwrap();
+        let a = propagator.propagate(0.0).unwrap();
+        let b = propagator.propagate(1.0).unwrap();
+        assert!(TwoBodyPropagator::miss_distance(a, b) > 1.0);
+    }
+
+    #[test]
+    fn invalid_eccentricity_is_rejected() {
+        let mut tle = iss_like_tle();
+        tle.eccentricity = 1.1;
+        assert_eq!(
+            TwoBodyPropagator::new(tle).unwrap_err(),
+            PropagationError::InvalidEccentricity
+        );
     }
 }
