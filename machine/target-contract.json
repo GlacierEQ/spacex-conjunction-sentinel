@@ -1,22 +1,37 @@
 {
-  "schema": "glaciereq.repo-target-contract.v1",
-  "identity": {
-    "repository_id": "GlacierEQ/spacex-conjunction-sentinel",
-    "family": "elite-estate"
-  },
+  "schema": "glaciereq.repo-target-contract.v2",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "purpose": "deterministic local orbital-conjunction assessment and maneuver-review simulation",
   "current": {
-    "state": "PROMOTED",
+    "state": "FUNCTIONAL_CANDIDATE",
     "implemented": true,
-    "tested": true,
+    "tested_locally": true,
+    "exact_head_native_ci_verified": false,
     "deployed": false
   },
-  "nonclaims": [
-    "no employer affiliation",
-    "no production deployment without receipt"
+  "required_capabilities": [
+    "analytic-relative-motion-cpa",
+    "deterministic-encounter-plane-monte-carlo-pc",
+    "bounded-linearized-maneuver-review",
+    "small-catalog-pairwise-screening",
+    "tle-mean-element-parsing",
+    "python-two-body-orbit-propagation",
+    "rust-two-body-orbit-propagation",
+    "deterministic-json-assessment-cli"
   ],
-  "donor_plan": {
-    "mode": "none",
-    "donors": []
-  },
-  "frozen_at": "2026-08-10T04:12Z"
+  "promotion_requires": [
+    "Python 3.11 native verification",
+    "Python 3.12 native verification",
+    "Python 3.13 native verification",
+    "Rust native verification",
+    "required-quality-gate"
+  ],
+  "nonclaims": [
+    "no SpaceX affiliation",
+    "no operational spacecraft authority",
+    "no maneuver execution",
+    "no flight certification",
+    "no SGP4/SDP4 fidelity claim",
+    "no production catalog-scale throughput claim"
+  ]
 }
