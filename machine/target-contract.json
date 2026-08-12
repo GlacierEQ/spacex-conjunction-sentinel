@@ -2,21 +2,36 @@
   "schema": "glaciereq.repo-target-contract.v1",
   "identity": {
     "repository_id": "GlacierEQ/spacex-conjunction-sentinel",
-    "family": "elite-estate"
+    "family": "UNRESOLVED_SPACEX_SPECIALIST_POSITION"
+  },
+  "target": {
+    "role": "bounded conjunction-assessment specialist",
+    "required_mechanisms": [
+      "close-approach risk estimation",
+      "orbital-state propagation reference",
+      "proof-bound promotion semantics"
+    ],
+    "required_proof": "exact-Git-SHA repository-native static, deterministic, adversarial, and operate evidence"
   },
   "current": {
-    "state": "PROMOTED",
+    "state": "IMPLEMENTED",
     "implemented": true,
-    "tested": true,
-    "deployed": false
+    "tested_current_exact_sha": false,
+    "deployed": false,
+    "canonical_family_position_resolved": false,
+    "projection_truth_repair_in_progress": true
   },
   "nonclaims": [
     "no employer affiliation",
-    "no production deployment without receipt"
+    "no production deployment without receipt",
+    "no validated SGP4/SDP4 certification claim",
+    "no Monte Carlo, Alfano Pc, maneuver optimizer, MCP deployment, catalog-scale, or hyper-scaling claim without implementation and proof"
   ],
   "donor_plan": {
     "mode": "none",
     "donors": []
   },
-  "frozen_at": "2026-08-10T04:12Z"
+  "frozen_at": "2026-08-10T04:12Z",
+  "reconciled_at": "2026-08-12T20:31Z",
+  "reconciliation_receipt": "machine/current-excellence-receipt.json"
 }
