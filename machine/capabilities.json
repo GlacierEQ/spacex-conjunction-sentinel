@@ -1,1 +1,9 @@
-{"capabilities": ["hyper-scaling"]}
+{
+  "schema": "glaciereq.repo-capabilities.v1",
+  "evidence_state": "LOCAL_CLOSE_APPROACH_GEOMETRY_NOT_COLLISION_AVOIDANCE_AUTHORITY",
+  "capabilities": [
+    "deterministic-local-relative-motion-close-approach-screening",
+    "bounded-geometric-proximity-scoring-not-collision-probability",
+    "native-rust-simplified-j2-kepler-reference"
+  ]
+}
