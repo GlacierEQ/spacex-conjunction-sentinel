@@ -2,13 +2,73 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  ci:
-    uses: GlacierEQ/public-actions-runner-host/.github/workflows/reusable-quick-ci.yml@main
-    with:
-      repo_name: ${{ github.event.repository.name }}
-      language: python
+  python:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: Run full Python test suite
+        run: python -m pytest -q
+      - name: Verify public and machine boundary
+        run: python scripts/verify_public_surface.py
+
+  rust:
+    name: Rust native reference
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Report Rust toolchain
+        run: rustc --version
+      - name: Compile native Rust reference tests
+        run: |
+          mkdir -p artifacts
+          rustc --edition=2021 --test src/orbit_propagator.rs -o artifacts/orbit-reference-tests
+      - name: Execute native Rust reference tests
+        run: artifacts/orbit-reference-tests
+
+  required-quality-gate:
+    name: required-quality-gate
+    if: always()
+    needs: [python, rust]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Python and Rust proof
+        run: |
+          test "${{ needs.python.result }}" = "success"
+          test "${{ needs.rust.result }}" = "success"
