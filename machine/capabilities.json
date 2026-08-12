@@ -1,1 +1,23 @@
-{"capabilities": ["hyper-scaling"]}
+{
+  "schema": "glaciereq.repo-capabilities.v1",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "capabilities": [
+    {
+      "id": "bounded-close-approach-risk",
+      "status": "IMPLEMENTED_UNVERIFIED_CURRENT_HEAD",
+      "surface": "src/conjunction.py"
+    },
+    {
+      "id": "orbital-state-propagation-reference",
+      "status": "IMPLEMENTED_UNVERIFIED_CURRENT_HEAD",
+      "surface": "src/orbit_propagator.rs"
+    },
+    {
+      "id": "proof-bound-local-promotion-authority",
+      "status": "IMPLEMENTED_UNVERIFIED_CURRENT_HEAD",
+      "surface": "src/promotion_authority.py"
+    }
+  ],
+  "removed_unsupported_capabilities": ["hyper-scaling"],
+  "extraction_state": "PENDING_EXACT_HEAD_PROOF_AND_CANONICAL_FAMILY_POSITION"
+}
