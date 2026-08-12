@@ -1,14 +1,52 @@
-name: CI
+name: Native functional verification
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  ci:
-    uses: GlacierEQ/public-actions-runner-host/.github/workflows/reusable-quick-ci.yml@main
-    with:
-      repo_name: ${{ github.event.repository.name }}
-      language: python
+  python:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e . pytest
+      - run: python -m compileall -q src tests
+      - run: pytest -q
+      - run: conjunction-sentinel demo > /tmp/conjunction-demo.json
+      - run: python -c 'import json; d=json.load(open("/tmp/conjunction-demo.json")); assert d["schema"] == "glaciereq.conjunction-assessment.v1"; assert d["operational_authority"] is False'
+
+  rust:
+    name: Rust native verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --all-targets
+      - run: cargo test
+
+  required-quality-gate:
+    if: always()
+    needs: [python, rust]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every native boundary
+        env:
+          PYTHON_RESULT: ${{ needs.python.result }}
+          RUST_RESULT: ${{ needs.rust.result }}
+        run: |
+          test "$PYTHON_RESULT" = "success"
+          test "$RUST_RESULT" = "success"
