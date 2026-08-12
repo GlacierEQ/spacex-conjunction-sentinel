@@ -1,0 +1,62 @@
+{
+  "schema": "glaciereq.repo-current-excellence-receipt.v1",
+  "repository": "GlacierEQ/spacex-conjunction-sentinel",
+  "observed_head": "ec3a8d5e088d0dcc454cfb37fd4216e29c8642a9",
+  "observed_at_utc": "2026-08-12T20:31:00Z",
+  "role": "ACTIVE_SPECIALIST_COMPONENT_PENDING_CANONICAL_FAMILY_POSITION",
+  "problem": "bounded close-approach risk estimation and orbit-propagation reference mechanisms for conjunction assessment",
+  "implemented_mechanisms": [
+    "Python relative-state miss-distance, relative-speed, coarse time-to-closest-approach, and bounded risk classification",
+    "Rust TLE state model with J2-aware orbital-element propagation and conjunction distance/relative-velocity helpers",
+    "local proof-bound promotion authority implementation"
+  ],
+  "current_repository_native_verification": {
+    "workflow": "CI",
+    "run_id": 31362141879,
+    "job_id": 93372948612,
+    "head_sha": "ec3a8d5e088d0dcc454cfb37fd4216e29c8642a9",
+    "conclusion": "failure",
+    "failed_step": "Verify Python project",
+    "first_gate": "ruff check .",
+    "reported_findings": 63,
+    "tests_executed_after_lint": false,
+    "artifact_upload_succeeded": false
+  },
+  "historical_local_receipt": {
+    "path": "machine/proof_receipt.json",
+    "result": "PASS",
+    "timestamp": "2026-08-10T04:12Z",
+    "exact_git_sha_bound": false,
+    "source_sha_field": "0a4bda2f6c504d5a970fe52f788f0e4c5aed7d9374a8c40f60ea6648f2a45ecb",
+    "inheritance_to_current_head_allowed": false
+  },
+  "projection_audit": {
+    "readme_overclaim_detected": true,
+    "examples": [
+      "README names src/conjunction_engine.py although the implemented Python module is src/conjunction.py",
+      "README presents Monte Carlo, Alfano probability-of-collision, automated maneuver optimization, and an MCP tool as implemented surfaces although direct current source inspection does not establish those behaviors",
+      "machine/excellence-state.json previously marked all modern gates true despite current exact-head CI failure"
+    ]
+  },
+  "gates": {
+    "problem_verified": true,
+    "unique_value_known": false,
+    "canonical_identity_known": false,
+    "central_mechanism_implemented": true,
+    "deterministic_tests_pass": false,
+    "adversarial_tests_pass": false,
+    "runtime_behavior_observed": false,
+    "security_authority_bounded": false,
+    "proof_receipt_bound_to_sha": false,
+    "reusable_capabilities_extracted": false,
+    "projections_truth_consistent": false,
+    "evolution_cursor_defined": true
+  },
+  "blockers": [
+    "repair current-head static-quality failures and rerun repository-native verification",
+    "bind successful deterministic/adversarial execution to the exact resulting Git SHA",
+    "replace inflated README surfaces with direct implementation-bounded claims",
+    "resolve canonical SpaceX-family position and unique value versus adjacent family members"
+  ],
+  "next_cursor": "First repair the current CI failure without weakening the verification gate; then execute deterministic/adversarial tests on the exact repair head, correct README projection truth, and only then reconsider TESTED/ADVERSARIAL_VERIFIED/PROMOTED state."
+}
